@@ -113,7 +113,8 @@ export default function App() {
     // You'll know what to do! Use log statements or breakpoints
     // to inspect the response from the server.
 
-    flushIt()
+    setMessage('')
+    console.log('Posting')
 
     axiosWithAuth()
       .post(articlesUrl, article)
@@ -128,16 +129,23 @@ export default function App() {
       })
   }
 
-  const updateArticle = ({ article_id, article }) => {
+  const updateArticle = (article) => {
     // ✨ implement
     // You got this!
 
-    flushIt()
+    setMessage('')
+    console.log('Putting')
 
     axiosWithAuth()
-      .put(`http://localhost:9000/api/articles/${article_id}`, article)
+      .put(`http://localhost:9000/api/articles/${currentArticleId}`, article)
       .then(resp => {
         console.log(resp)
+        setMessage(resp.data.message)
+        setArticles(articles.filter(article => {
+          return article.article_id == article.id ? resp.data.article : article;
+        }))
+
+        setCurrentArticleId();
       })
       .catch(error => {
         console.log(error)
@@ -185,7 +193,8 @@ export default function App() {
                   return article.article_id == currentArticleId
                 })}
                 updateArticle={updateArticle} 
-                postArticle={postArticle} 
+                postArticle={postArticle}
+                currentArticleId={currentArticleId}
                 />
 
               <Articles 
