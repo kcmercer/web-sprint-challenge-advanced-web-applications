@@ -8,6 +8,8 @@ import Message from './Message'
 import ArticleForm from './ArticleForm'
 import Spinner from './Spinner'
 
+import axiosWithAuth from '../axios/index';
+
 const articlesUrl = 'http://localhost:9000/api/articles'
 const loginUrl = 'http://localhost:9000/api/login'
 
@@ -27,6 +29,11 @@ export default function App() {
 
   const redirectToArticles = () => {
     navigate('/articles')
+  }
+
+  const flushIt = () => {
+    setMessage('');
+    setSpinnerOn(true);
   }
 
   const logout = () => {
@@ -50,11 +57,10 @@ export default function App() {
     // put the server success message in its proper state, and redirect
     // to the Articles screen. Don't forget to turn off the spinner!
 
-    setMessage('');
-    setSpinnerOn(true);
+    flushIt()
 
     console.log(values)
-    axios.post('http://localhost:9000/api/login', values)
+    axios.post(loginUrl, values)
     .then(resp => {
       console.log(resp)
 
@@ -79,6 +85,27 @@ export default function App() {
     // If something goes wrong, check the status of the response:
     // if it's a 401 the token might have gone bad, and we should redirect to login.
     // Don't forget to turn off the spinner!
+
+    flushIt()
+
+    axiosWithAuth()
+      .get(articlesUrl)
+      .then(resp => {
+        console.log(resp)
+
+        setArticles(resp.data.articles)
+        setMessage(resp.data.message)
+      })
+      .catch(error => {
+        if(error.resp.status == 401) {
+          redirectToLogin()
+        } else {
+          console.log(error)
+        }
+      })
+      .finally(() => {
+        setSpinnerOn(false)
+      })
   }
 
   const postArticle = article => {
@@ -86,15 +113,48 @@ export default function App() {
     // The flow is very similar to the `getArticles` function.
     // You'll know what to do! Use log statements or breakpoints
     // to inspect the response from the server.
+
+    flushIt()
+
+    axiosWithAuth()
+      .post(articlesUrl, article)
+      .then(resp => {
+        console.log(resp)
+      })
+      .catch(error => {
+        console.log(error)
+      })
   }
 
   const updateArticle = ({ article_id, article }) => {
     // ✨ implement
     // You got this!
+
+    flushIt()
+
+    axiosWithAuth()
+      .put(`http://localhost:9000/api/articles/${article_id}`, article)
+      .then(resp => {
+        console.log(resp)
+      })
+      .catch(error => {
+        console.log(error)
+      })
   }
 
   const deleteArticle = article_id => {
     // ✨ implement
+
+    flushIt()
+
+    axiosWithAuth()
+      .delete(`http://localhost:9000/api/articles/${article_id}`)
+      .then(resp => {
+        console.log(resp)
+      })
+      .catch(error => {
+        console.log(error)
+      })
   }
 
   return (
@@ -113,8 +173,8 @@ export default function App() {
           <Route path="/" element={<LoginForm login={login} />} />
           <Route path="articles" element={
             <>
-              <ArticleForm />
-              <Articles />
+              <ArticleForm updateArticle={updateArticle} postArticle={postArticle} />
+              <Articles getArticles={getArticles} articles={articles} deleteArticle={deleteArticle} setCurrentArticleId={setCurrentArticleId} />
             </>
           } />
         </Routes>
