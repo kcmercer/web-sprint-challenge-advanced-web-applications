@@ -35,11 +35,13 @@ export default function ArticleForm(props) {
     // depending on the truthyness of the `currentArticle` prop.
 
     if (currentArticleId) {
-      updateArticle(values);
+      console.log(article.article_id)
+      console.log(values)
+      updateArticle(article.article_id, values)
     } else {
       postArticle(values);
     }
-    setValues(initialFormValues);
+    setValues(initialFormValues)
   };
 
   const isDisabled = () => {
@@ -47,9 +49,9 @@ export default function ArticleForm(props) {
     // Make sure the inputs have some values
 
     if (values.title && values.text && values.topic) {
-      return false;
+      return false
     } else {
-      return true;
+      return true
     }
   }
 

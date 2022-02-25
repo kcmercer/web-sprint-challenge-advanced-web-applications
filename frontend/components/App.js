@@ -120,6 +120,10 @@ export default function App() {
       .post(articlesUrl, article)
       .then(resp => {
         console.log(resp)
+        
+        setArticles(articles.concat(resp.data.article));
+        setMessage(resp.data.message)
+
       })
       .catch(error => {
         console.log(error)
@@ -129,27 +133,25 @@ export default function App() {
       })
   }
 
-  const updateArticle = (article) => {
+  const updateArticle = (article_id, article) => {
     // ✨ implement
     // You got this!
 
     setMessage('')
-    console.log('Putting')
+    console.log('Putting', article_id, article)
 
     axiosWithAuth()
-      .put(`http://localhost:9000/api/articles/${currentArticleId}`, article)
+      .put(`http://localhost:9000/api/articles/${article_id}`, article)
       .then(resp => {
         console.log(resp)
         setMessage(resp.data.message)
-        setArticles(articles.filter(article => {
-          return article.article_id == article.id ? resp.data.article : article;
-        }))
-
-        setCurrentArticleId();
+        setArticles(articles.map(article => article.article_id !== article_id ? article : resp.data.article))
       })
       .catch(error => {
         console.log(error)
       })
+
+      setCurrentArticleId()
   }
 
   const deleteArticle = article_id => {
@@ -163,12 +165,16 @@ export default function App() {
         console.log(resp)
 
         setMessage(resp.data.message)
-        setArticles(articles.filter(article => {
-          return article.article_id != article.id
+        
+        setArticles(articles.filter(articles => {
+          return articles.article_id != article_id
         }))
       })
       .catch(error => {
         console.log(error)
+      })
+      .finally(() => {
+        setSpinnerOn(false)
       })
   }
 
