@@ -62,17 +62,16 @@ export default function App() {
     console.log(values)
     axios.post(loginUrl, values)
     .then(resp => {
-      console.log(resp)
-
       localStorage.setItem('token', resp.data.token)
 
       setMessage(resp.data.message)
-      setSpinnerOn(false)
-
       redirectToArticles()
     })
     .catch(error => {
       console.log(error)
+    })
+    .finally(() => {
+      setSpinnerOn(false)
     })
   }
 
@@ -124,6 +123,9 @@ export default function App() {
       .catch(error => {
         console.log(error)
       })
+      .finally(() => {
+        setSpinnerOn(false)
+      })
   }
 
   const updateArticle = ({ article_id, article }) => {
@@ -145,12 +147,17 @@ export default function App() {
   const deleteArticle = article_id => {
     // ✨ implement
 
-    flushIt()
+    setMessage('')
 
     axiosWithAuth()
       .delete(`http://localhost:9000/api/articles/${article_id}`)
       .then(resp => {
         console.log(resp)
+
+        setMessage(resp.data.message)
+        setArticles(articles.filter(article => {
+          return article.article_id != article.id
+        }))
       })
       .catch(error => {
         console.log(error)
@@ -173,8 +180,20 @@ export default function App() {
           <Route path="/" element={<LoginForm login={login} />} />
           <Route path="articles" element={
             <>
-              <ArticleForm updateArticle={updateArticle} postArticle={postArticle} />
-              <Articles getArticles={getArticles} articles={articles} deleteArticle={deleteArticle} setCurrentArticleId={setCurrentArticleId} />
+              <ArticleForm 
+                article={articles.find((article) => {
+                  return article.article_id == currentArticleId
+                })}
+                updateArticle={updateArticle} 
+                postArticle={postArticle} 
+                />
+
+              <Articles 
+                getArticles={getArticles} 
+                articles={articles} 
+                deleteArticle={deleteArticle} 
+                setCurrentArticleId={setCurrentArticleId} 
+                />
             </>
           } />
         </Routes>
